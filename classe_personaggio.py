@@ -1,3 +1,4 @@
+import random
 from classe_arma import Arma
 
 class Personaggio:
@@ -8,6 +9,7 @@ class Personaggio:
         self.__forza = forza 
         self.__destrezza = destrezza
         self.__arma = None
+        self.__pozioni = []
 
     #Funzione che assegna un'arma al personaggio
     def equipaggia(self, arma: Arma):
@@ -29,19 +31,57 @@ class Personaggio:
     
     #Funzione che gestisce l'attacco di un personaggio verso un altro
     def attacca(self, nemico: "Personaggio") -> int:
-        #Se non ha un’arma equipaggiata, danno base = 1
+        #Se non ha un'arma equipaggiata, danno base = 1
         if not self.__arma:
             danno = 1
         else:
-            #Danno casuale dell’arma
             danno = self.__arma.get_danno()
-            #Aggiunge modificatore di forza o destrezza in base al tipo
-            if self.__arma.tipo == "mischia":
-                danno += self.modificatore(self.__forza)
-            else: 
-                danno += self.modificatore(self.__destrezza)
-        danno = max(0, danno)
-        return nemico.subisci(danno)
+        
+        nemico.subisci(danno)
+        return danno
+
+    #Funzione che aggiunge una pozione all'inventario
+    def aggiungi_pozione(self, pozione):
+        self.__pozioni.append(pozione)
+
+    #Funzione che decide se usare una pozione
+    def scegli_se_usare_la_pozione(self, nemico):
+        if not self.__pozioni:
+            return None
+        
+        if self.__vita < self.__vita_massima * 0.4:
+            for pozione in self.__pozioni:
+                if pozione.effetto == "cura":
+                    return pozione
+        
+        if nemico.vita > nemico.vita_massima * 0.6:
+            for pozione in self.__pozioni:
+                if pozione.effetto in ["buff_forza", "buff_destrezza"]:
+                    return pozione
+        
+        return None
+
+    #Funzione che usa una pozione
+    def usa_pozione(self, pozione):
+        pozione.applica_a(self)
+        self.__pozioni.remove(pozione)
+
+    #Funzione che aggiunge un buff temporaneo a una caratteristica
+    def aggiungi_buff(self, caratteristica: str, quantita: int, durata: int) -> None:
+        if caratteristica == "forza":
+            self.__forza += quantita
+        elif caratteristica == "destrezza":
+            self.__destrezza += quantita
+
+    #Funzione che guarisce il personaggio
+    def guarisci(self, quantita: int) -> int:
+        guarigione = min(quantita, self.__vita_massima - self.__vita)
+        self.__vita += guarigione
+        return guarigione
+
+    #Funzione che aggiorna i buff
+    def controllo_buff(self):
+        pass
 
     #Imposto le "property" (getter e setter) per il nome 
     @property
@@ -59,7 +99,7 @@ class Personaggio:
 
     @vita.setter
     def vita(self, vita: int):
-        self.__vita = max(0, min(vita, self.__vita_massima))
+        self.__vita = vita
 
     #Imposto le "property" (getter e setter) per la vita_massima 
     @property
@@ -68,10 +108,7 @@ class Personaggio:
 
     @vita_massima.setter
     def vita_massima(self, vita_massima: int):
-        if vita_massima > 0:
-            self.__vita_massima = vita_massima
-            if self.__vita > vita_massima:
-                self.__vita = vita_massima
+        self.__vita_massima = vita_massima
 
     #Imposto le "property" (getter e setter) per la forza 
     @property
