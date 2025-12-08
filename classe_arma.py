@@ -2,26 +2,25 @@ import random
 
 class Arma:
     def __init__(self, nome: str, danno_minimo: int, danno_massimo: int, tipo: str):
+        #Controllo dei parametri e validazione:
+        #1)Solleva ValueError se 'nome' è vuoto
+        #2)Solleva ValueError se 'danno_minimo' non è un intero >= 1
+        #3)Solleva ValueError se 'danno_massimo' non è un intero >= danno_minimo
+        if not isinstance(nome, str) or nome.strip() == "":
+            raise ValueError("nome non può essere vuoto.")
         self.__nome = nome
-        #Controllo dei limiti del danno (minimo e massimo)
-        if danno_minimo >= 1:
-            self.__danno_minimo = danno_minimo
-        else:
-            print("Attenzione!! Il danno minimo non è maggiore/uguale ad 1.")
-            self.__danno_minimo = 1
-        
-        if danno_massimo >= danno_minimo:
-            self.__danno_massimo = danno_massimo
-        else:
-            print("Attenzione!! Il danno massimo è più piccolo della condizione.")
-            self.__danno_massimo = self.__danno_minimo + 1
 
-        #Controllo di che tipo di arma si tratta
-        if tipo == "mischia" or tipo == "distanza":
-            self.__tipo = tipo
-        else:
-            print("ERRORE! Il tipo dev'essere mischia o distanza")
-            self.__tipo = "mischia" 
+        if not isinstance(danno_minimo, int) or danno_minimo < 1:
+            raise ValueError("danno_minimo deve essere >= 1.")
+        if not isinstance(danno_massimo, int) or danno_massimo < danno_minimo:
+            raise ValueError("danno_massimo deve essere >= danno_minimo.")
+        self.__danno_minimo = danno_minimo
+        self.__danno_massimo = danno_massimo
+
+        #Controllo del tipo: deve essere 'mischia' o 'distanza' — altrimenti solleva ValueError
+        if tipo != "mischia" and tipo != "distanza":
+            raise ValueError("tipo deve essere 'mischia' o 'distanza'.")
+        self.__tipo = tipo
 
     #Imposto le "property" (getter e setter) per il nome 
     @property

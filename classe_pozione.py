@@ -28,20 +28,36 @@ class Pozione:
 
     #Funzione che applica l'effetto della pozione al bersaglio
     def applica_a(self, bersaglio):
+        #Validazioni e controlli:
+        #Solleva ValueError se la pozione è già stata consumata
+        #1)Per 'cura': solleva TypeError se il bersaglio non supporta 'guarisci'
+        #              solleva ValueError se il bersaglio ha già HP massimi
+        #2)Per 'buff_*': solleva TypeError se il bersaglio non supporta 'aggiungi_buff'
+        #                solleva ValueError se il buff relativo è già attivo (se rilevabile)
         if self.__usata:
-            print("Errore: questa pozione è già stata consumata!")
-            return
+            raise ValueError("Errore: questa pozione è già stata consumata!")
 
         if self.__effetto == "cura":
             if not hasattr(bersaglio, 'guarisci') or not callable(getattr(bersaglio, 'guarisci')):
-                print("Errore: il bersaglio non supporta 'guarisci'")
-                return
+                raise TypeError("Errore: il bersaglio non supporta 'guarisci'")
+            #Assume proprietà 'vita' e 'vita_massima' per il bersaglio
+            if hasattr(bersaglio, 'vita') and hasattr(bersaglio, 'vita_massima'):
+                if bersaglio.vita >= bersaglio.vita_massima:
+                    raise ValueError("Il bersaglio ha già HP massimi.")
             bersaglio.guarisci(self.__quantita)
         else:
             if not hasattr(bersaglio, 'aggiungi_buff') or not callable(getattr(bersaglio, 'aggiungi_buff')):
-                print("Errore: il bersaglio non supporta 'aggiungi_buff'")
-                return
+                raise TypeError("Errore: il bersaglio non supporta 'aggiungi_buff'")
             caratteristica = "forza" if self.__effetto == "buff_forza" else "destrezza"
+            #Se il bersaglio espone una struttura 'buffs' si controlla se il buff è già attivo
+            if hasattr(bersaglio, 'buffs'):
+                try:
+                    buffs = getattr(bersaglio, 'buffs')
+                    if isinstance(buffs, dict) and buffs.get(caratteristica):
+                        raise ValueError(f"Buff alla {caratteristica} già attivo")
+                except Exception:
+                    #Se la struttura non è controllabile, procediamo comunque ad applicare il buff
+                    pass
             bersaglio.aggiungi_buff(caratteristica, self.__quantita, self.__durata)
 
         self.__usata = True

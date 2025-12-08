@@ -3,6 +3,15 @@ from classe_arma import Arma
 
 class Personaggio:
     def __init__(self, nome: str, vita_massima: int, forza: int, destrezza: int):
+        #Validazione dei parametri numerici:
+        #1)Solleva ValueError se vita_massima, forza o destrezza sono <= 0
+        if vita_massima <= 0:
+            raise ValueError("vita_massima deve essere > 0.")
+        if forza <= 0:
+            raise ValueError("forza deve essere > 0.")
+        if destrezza <= 0:
+            raise ValueError("destrezza deve essere > 0.")
+
         self.__nome = nome
         self.__vita_massima = vita_massima
         self.__vita = self.__vita_massima
@@ -13,6 +22,10 @@ class Personaggio:
 
     #Funzione che assegna un'arma al personaggio
     def equipaggia(self, arma: Arma):
+        #Controllo duck-typing sull'oggetto arma:
+        #1)Solleva TypeError se l'oggetto non ha i metodi/attributi attesi
+        if not (hasattr(arma, "get_danno") and (hasattr(arma, "tipo") or hasattr(arma, "get_type"))):
+            raise TypeError("Oggetto non equipaggiabile, non è un’arma valida.")
         self.__arma = arma
 
     #Funzione che calcola il modificatore 
@@ -25,6 +38,13 @@ class Personaggio:
         
     #Funzione che riduce la vita del personaggio
     def subisci(self, danno: int) -> int:
+        #Validazioni:
+        #1)Solleva TypeError se danno non è intero
+        #2)Solleva ValueError se danno è negativo
+        if not isinstance(danno, int):
+            raise TypeError("danno deve essere un intero.")
+        if danno < 0:
+            raise ValueError("danno non può essere negativo.")
         danno_effettivo = max(0, danno)
         self.__vita = max(0, self.__vita - danno_effettivo)
         return danno_effettivo
@@ -75,6 +95,13 @@ class Personaggio:
 
     #Funzione che guarisce il personaggio
     def guarisci(self, quantita: int) -> int:
+        #Validazioni:
+        #1)Solleva TypeError se quantita non è intero
+        #2)Solleva ValueError se quantita è negativa
+        if not isinstance(quantita, int):
+            raise TypeError("quantita deve essere un intero.")
+        if quantita < 0:
+            raise ValueError("quantita non può essere negativa.")
         guarigione = min(quantita, self.__vita_massima - self.__vita)
         self.__vita += guarigione
         return guarigione
@@ -135,6 +162,10 @@ class Personaggio:
 
     @arma.setter
     def arma(self, arma: Arma):
+        #Controllo duck-typing sull'oggetto arma:
+        #1)Solleva TypeError se l'oggetto non ha i metodi/attributi attesi
+        if arma is not None and not (hasattr(arma, "get_danno") and (hasattr(arma, "tipo") or hasattr(arma, "get_type"))):
+            raise TypeError("Oggetto non equipaggiabile, non è un’arma valida.")
         self.__arma = arma
 
     def __str__(self):
